@@ -9,7 +9,7 @@ const toastError = vi.fn();
 const toastSuccess = vi.fn();
 vi.mock('sonner', () => ({ toast: { error: (...args: any[]) => toastError(...args), success: (...args: any[]) => toastSuccess(...args) } }));
 
-const sampleUser = { id: '1', email: 'a@b.com', firstName: 'A', lastName: 'B', status: 'ACTIVE', roles: [] };
+const sampleUser = { id: '1', email: 'a@b.com', firstName: 'A', lastName: 'B', status: 'ACTIVE', roles: [{ id: 'r1' }] };
 
 function renderWithClient(ui: React.ReactElement) {
   const qc = new QueryClient();
