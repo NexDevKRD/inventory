@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import { userRepository } from '../repositories/user.repository';
 import { refreshTokenRepository } from '../repositories/refreshToken.repository';
 import { auditLogRepository } from '../repositories/auditLog.repository';
+import { passwordResetTokenRepository } from '../repositories/passwordResetToken.repository';
 import { comparePassword, hashPassword, hashToken } from '../lib/hash';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt';
 import { UnauthorizedError } from '../lib/errors';
@@ -8,6 +10,7 @@ import { UnauthorizedError } from '../lib/errors';
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 const REFRESH_TTL_DAYS = 7;
+const RESET_TOKEN_TTL_MINUTES = 15;
 
 interface RequestMeta { ipAddress?: string; userAgent?: string }
 
@@ -99,14 +102,28 @@ export const authService = {
   async requestPasswordReset(email: string) {
     const user = await userRepository.findByEmail(email);
     if (!user) return; // no user-enumeration
-    const rawToken = signRefreshToken(user.id); // reuse signer for random opaque token
-    console.log(`[stub email] Password reset link for ${email}: /reset-password?token=${rawToken}`);
+
+    const rawToken = crypto.randomBytes(32).toString('base64url');
+    await passwordResetTokenRepository.create({
+      userId: user.id,
+      tokenHash: hashToken(rawToken),
+      expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MINUTES * 60_000),
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[stub email] Password reset link for ${email}: /reset-password?token=${rawToken}`);
+    }
   },
 
   async resetPassword(rawToken: string, newPassword: string) {
-    const decoded = verifyRefreshToken(rawToken);
+    const stored = await passwordResetTokenRepository.findByHash(hashToken(rawToken));
+    if (!stored) throw new UnauthorizedError('Invalid or expired reset token');
+    if (stored.expiresAt < new Date()) throw new UnauthorizedError('Invalid or expired reset token');
+    if (stored.usedAt) throw new UnauthorizedError('Invalid or expired reset token');
+
     const passwordHash = await hashPassword(newPassword);
-    await userRepository.update(decoded.userId, { passwordHash });
-    await refreshTokenRepository.revokeAllForUser(decoded.userId);
+    await userRepository.update(stored.userId, { passwordHash });
+    await passwordResetTokenRepository.markUsed(stored.id);
+    await refreshTokenRepository.revokeAllForUser(stored.userId);
   },
 };
