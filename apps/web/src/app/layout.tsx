@@ -2,7 +2,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import { rtlLocales, Locale } from '@/i18n/request';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
-import { AuthProvider } from '@/lib/AuthContext';
+import { Providers } from './providers';
 import './globals.css';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +14,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <Providers>{children}</Providers>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
