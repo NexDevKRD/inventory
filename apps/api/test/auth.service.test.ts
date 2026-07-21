@@ -16,6 +16,7 @@ describe('authService', () => {
   });
 
   afterAll(async () => {
+    await prisma.passwordResetToken.deleteMany({ where: { userId } });
     await prisma.refreshToken.deleteMany({ where: { userId } });
     await prisma.userRole.deleteMany({ where: { userId } });
     await prisma.user.delete({ where: { id: userId } });
