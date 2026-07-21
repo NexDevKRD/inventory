@@ -2,13 +2,13 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 
 const items = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Users', href: '/users' },
-  { label: 'Roles & Permissions', href: '/roles' },
-  { label: 'Audit Logs', href: '/audit-logs' },
-  { label: 'Products', href: '/products', comingSoon: true },
-  { label: 'Warehouses', href: '/warehouses', comingSoon: true },
-  { label: 'Settings', href: '/settings', comingSoon: true },
+  { label: 'Dashboard', href: '/admin/dashboard' },
+  { label: 'Users', href: '/admin/users' },
+  { label: 'Roles & Permissions', href: '/admin/roles' },
+  { label: 'Audit Logs', href: '/admin/audit-logs' },
+  { label: 'Products', href: '/admin/products', comingSoon: true },
+  { label: 'Warehouses', href: '/admin/warehouses', comingSoon: true },
+  { label: 'Settings', href: '/admin/settings', comingSoon: true },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
