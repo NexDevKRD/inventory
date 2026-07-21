@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function EmptyState({ title = 'No results', description }: { title?: string; description?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center text-gray-500 dark:text-gray-400">

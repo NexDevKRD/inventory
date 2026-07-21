@@ -1,3 +1,5 @@
+import React from 'react';
+
 const STATUS_STYLES: Record<string, string> = {
   ACTIVE: 'bg-success/10 text-success', COMPLETED: 'bg-success/10 text-success', DELIVERED: 'bg-success/10 text-success',
   INACTIVE: 'bg-gray-200 text-gray-600', LOCKED: 'bg-warning/10 text-warning', PENDING: 'bg-warning/10 text-warning',

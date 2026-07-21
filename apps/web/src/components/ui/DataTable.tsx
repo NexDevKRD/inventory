@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import { EmptyState } from './EmptyState';
 
 interface Column<T> { key: keyof T; header: string; render?: (row: T) => React.ReactNode }
