@@ -4,4 +4,5 @@ module.exports = {
   roots: ['<rootDir>'],
   testMatch: ['**/test/**/*.test.ts'],
   setupFiles: ['<rootDir>/test/setup.ts'],
+  globalSetup: '<rootDir>/test/globalSetup.ts',
 };
