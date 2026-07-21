@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import { authService } from '../src/services/auth.service';
 import { prisma } from '../src/lib/prisma';
-import { hashPassword } from '../src/lib/hash';
+import { hashPassword, hashToken } from '../src/lib/hash';
+import { passwordResetTokenRepository } from '../src/repositories/passwordResetToken.repository';
 import { RoleName } from '@inventory/shared';
 
 describe('authService', () => {
@@ -48,5 +50,57 @@ describe('authService', () => {
     // reuse of the original (now-revoked) token must revoke everything and throw
     await expect(authService.refresh(refreshToken, { ipAddress: '127.0.0.1', userAgent: 'jest' })).rejects.toThrow();
     await expect(authService.refresh(rotated.refreshToken, { ipAddress: '127.0.0.1', userAgent: 'jest' })).rejects.toThrow();
+  });
+
+  it('requestPasswordReset stores a hashed, opaque, time-limited token (not a JWT)', async () => {
+    await prisma.user.update({ where: { id: userId }, data: { failedLoginCount: 0, lockedUntil: null } });
+    await authService.requestPasswordReset('test.auth@example.com');
+
+    const stored = await prisma.passwordResetToken.findFirst({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    expect(stored).toBeTruthy();
+    expect(stored!.usedAt).toBeNull();
+    expect(stored!.expiresAt.getTime()).toBeGreaterThan(Date.now());
+    expect(stored!.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + 16 * 60_000);
+    // stored value must be a hash, not a JWT (no '.' segments like a JWT would have)
+    expect(stored!.tokenHash).not.toContain('.');
+    expect(stored!.tokenHash).toHaveLength(64); // sha256 hex digest
+  });
+
+  it('resets the password with a valid single-use token and revokes sessions', async () => {
+    const rawToken = crypto.randomBytes(32).toString('base64url');
+    await passwordResetTokenRepository.create({
+      userId,
+      tokenHash: hashToken(rawToken),
+      expiresAt: new Date(Date.now() + 15 * 60_000),
+    });
+
+    // seed an active refresh token so we can assert it gets revoked by the reset
+    const { refreshToken } = await authService.login({ email: 'test.auth@example.com', password: 'CorrectHorse1!' }, { ipAddress: '127.0.0.1', userAgent: 'jest' });
+
+    await authService.resetPassword(rawToken, 'NewCorrectHorse2!');
+
+    // old password no longer works, new one does
+    await expect(
+      authService.login({ email: 'test.auth@example.com', password: 'CorrectHorse1!' }, { ipAddress: '127.0.0.1', userAgent: 'jest' })
+    ).rejects.toThrow();
+    const loginResult = await authService.login({ email: 'test.auth@example.com', password: 'NewCorrectHorse2!' }, { ipAddress: '127.0.0.1', userAgent: 'jest' });
+    expect(loginResult.accessToken).toBeDefined();
+
+    // token is single-use: reusing it must be rejected
+    await expect(authService.resetPassword(rawToken, 'AnotherPassword3!')).rejects.toThrow();
+
+    // the refresh token issued before the reset was revoked
+    await expect(authService.refresh(refreshToken, { ipAddress: '127.0.0.1', userAgent: 'jest' })).rejects.toThrow();
+  });
+
+  it('rejects an expired reset token', async () => {
+    const rawToken = crypto.randomBytes(32).toString('base64url');
+    await passwordResetTokenRepository.create({
+      userId,
+      tokenHash: hashToken(rawToken),
+      expiresAt: new Date(Date.now() - 60_000), // already expired
+    });
+
+    await expect(authService.resetPassword(rawToken, 'SomePassword4!')).rejects.toThrow(/invalid|expired/i);
   });
 });
