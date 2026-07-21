@@ -7,7 +7,7 @@ interface AuthUser { id: string; email: string; roles: string[]; permissions: st
 interface AuthContextValue {
   user: AuthUser | null;
   accessToken: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 
@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await client.post('/auth/login', { email, password });
     setAccessToken(res.data.data.accessToken);
     setUser(res.data.data.user);
+    return res.data.data.user as AuthUser;
   }, [client]);
 
   const logout = useCallback(async () => {

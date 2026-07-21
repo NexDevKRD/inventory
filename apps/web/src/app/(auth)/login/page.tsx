@@ -1,18 +1,30 @@
 'use client';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { loginSchema, LoginInput } from '@inventory/shared';
 import { useAuth } from '@/lib/AuthContext';
 import { FormField } from '@/components/ui/FormField';
 import { toast } from 'sonner';
 
+const ROLE_HOME: Record<string, string> = {
+  SUPER_ADMIN: '/admin/dashboard',
+  INVENTORY_MANAGER: '/inventory/dashboard',
+  INVENTORY_STAFF: '/inventory/dashboard',
+  DOCTOR: '/doctor/dashboard',
+  DELIVERY_STAFF: '/delivery/dashboard',
+  SUPPLIER: '/supplier/dashboard',
+};
+
 export default function LoginPage() {
   const { login } = useAuth();
+  const router = useRouter();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
 
   const onSubmit = async (data: LoginInput) => {
     try {
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
+      router.push(ROLE_HOME[user.roles[0]] ?? '/admin/dashboard');
     } catch {
       toast.error('Invalid credentials or account locked');
     }
