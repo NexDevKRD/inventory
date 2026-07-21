@@ -54,7 +54,7 @@ export default function UsersPage() {
         total={usersQuery.data?.total ?? 0}
         onPageChange={setPage}
       />
-      <UserFormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} roles={rolesQuery.data ?? []} onSubmit={(data) => createMutation.mutate(data)} />
+      <UserFormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} roles={Array.isArray(rolesQuery.data) ? rolesQuery.data : []} onSubmit={(data) => createMutation.mutate(data)} />
       <ConfirmDialog
         open={!!confirmId}
         title="Deactivate user?"
