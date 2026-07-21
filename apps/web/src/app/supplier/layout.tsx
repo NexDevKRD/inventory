@@ -2,9 +2,9 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 
 const items = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Purchase Orders', href: '/purchase-orders', comingSoon: true },
-  { label: 'Invoices', href: '/invoices', comingSoon: true },
+  { label: 'Dashboard', href: '/supplier/dashboard' },
+  { label: 'Purchase Orders', href: '/supplier/purchase-orders', comingSoon: true },
+  { label: 'Invoices', href: '/supplier/invoices', comingSoon: true },
 ];
 
 export default function SupplierLayout({ children }: { children: React.ReactNode }) {

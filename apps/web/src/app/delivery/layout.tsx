@@ -2,9 +2,9 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
 
 const items = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Assigned Deliveries', href: '/deliveries', comingSoon: true },
-  { label: 'Delivery History', href: '/history', comingSoon: true },
+  { label: 'Dashboard', href: '/delivery/dashboard' },
+  { label: 'Assigned Deliveries', href: '/delivery/deliveries', comingSoon: true },
+  { label: 'Delivery History', href: '/delivery/history', comingSoon: true },
 ];
 
 export default function DeliveryLayout({ children }: { children: React.ReactNode }) {
