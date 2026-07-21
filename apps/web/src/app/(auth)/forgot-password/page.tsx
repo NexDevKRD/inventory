@@ -10,7 +10,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     await fetch('/api/v1/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     setSent(true);
-    toast.success('If that email exists, a reset link was sent.');
+    toast.success('If that email exists, check the server console for the reset link (dev mode).');
   };
 
   if (sent) return <p className="text-center">Check the server console for the reset link (dev mode).</p>;
