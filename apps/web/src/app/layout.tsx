@@ -2,6 +2,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import { rtlLocales, Locale } from '@/i18n/request';
 import { ThemeProvider } from '@/components/layout/ThemeProvider';
+import { AuthProvider } from '@/lib/AuthContext';
 import './globals.css';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
