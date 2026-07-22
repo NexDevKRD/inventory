@@ -5,7 +5,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
-    return [{ source: '/api/v1/:path*', destination: 'http://localhost:4000/api/v1/:path*' }];
+    const apiUrl = process.env.API_URL ?? 'http://localhost:4000';
+    return [{ source: '/api/v1/:path*', destination: `${apiUrl}/api/v1/:path*` }];
   },
 };
 
