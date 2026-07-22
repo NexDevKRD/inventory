@@ -5,12 +5,15 @@ import { useAuth } from '@/lib/AuthContext';
 import { DataTable } from '@/components/ui/DataTable';
 
 export default function AuditLogsPage() {
-  const { accessToken } = useAuth();
+  const { apiClient } = useAuth();
   const [page, setPage] = useState(1);
 
   const logsQuery = useQuery({
     queryKey: ['audit-logs', page],
-    queryFn: () => fetch(`/api/v1/audit-logs?page=${page}&pageSize=20`, { headers: { Authorization: `Bearer ${accessToken}` } }).then((r) => r.json()).then((r) => r.data),
+    queryFn: async () => {
+      const res = await apiClient.get('/audit-logs', { params: { page, pageSize: 20 } });
+      return res.data.data;
+    },
   });
 
   return (

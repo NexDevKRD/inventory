@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/layout/Sidebar';
 import { TopNav } from '@/components/layout/TopNav';
+import { RequireAuth } from '@/components/layout/RequireAuth';
 
 const items = [
   { label: 'Dashboard', href: '/inventory/dashboard' },
@@ -13,12 +14,14 @@ const items = [
 
 export default function InventoryLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar items={items} title="Inventory" />
-      <div className="flex-1">
-        <TopNav />
-        <main className="p-6">{children}</main>
+    <RequireAuth>
+      <div className="flex min-h-screen">
+        <Sidebar items={items} title="Inventory" />
+        <div className="flex-1">
+          <TopNav />
+          <main className="p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </RequireAuth>
   );
 }

@@ -3,7 +3,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import UsersPage from '../src/app/admin/users/page';
 
-vi.mock('@/lib/AuthContext', () => ({ useAuth: () => ({ accessToken: 'x', user: { permissions: ['user.create'] } }) }));
+const apiGet = vi.fn();
+const apiPost = vi.fn();
+const apiPatch = vi.fn();
+const apiDelete = vi.fn();
+
+vi.mock('@/lib/AuthContext', () => ({
+  useAuth: () => ({
+    accessToken: 'x',
+    user: { permissions: ['user.create'] },
+    apiClient: { get: apiGet, post: apiPost, patch: apiPatch, delete: apiDelete },
+  }),
+}));
 
 const toastError = vi.fn();
 const toastSuccess = vi.fn();
@@ -16,35 +27,39 @@ function renderWithClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>);
 }
 
-function jsonResponse(body: any, ok = true, status = 200) {
-  return Promise.resolve({ ok, status, json: () => Promise.resolve(body) });
+function axiosResponse(data: any) {
+  return Promise.resolve({ data });
 }
 
 describe('UsersPage', () => {
   beforeEach(() => {
     toastError.mockClear();
     toastSuccess.mockClear();
+    apiGet.mockReset();
+    apiPost.mockReset();
+    apiPatch.mockReset();
+    apiDelete.mockReset();
   });
 
   it('renders fetched users', async () => {
-    global.fetch = vi.fn((url: string) => {
-      if (url.includes('/api/v1/roles')) return jsonResponse({ success: true, data: [] });
-      return jsonResponse({ success: true, data: { items: [sampleUser], total: 1, page: 1, pageSize: 20 } });
-    }) as any;
+    apiGet.mockImplementation((url: string) => {
+      if (url.includes('/roles')) return axiosResponse({ success: true, data: [] });
+      return axiosResponse({ success: true, data: { items: [sampleUser], total: 1, page: 1, pageSize: 20 } });
+    });
 
     renderWithClient(<UsersPage />);
     await waitFor(() => expect(screen.getByText('a@b.com')).toBeInTheDocument());
   });
 
   it('edits a user via PATCH and refetches the list', async () => {
-    const fetchMock = vi.fn((url: string, init?: any) => {
-      if (url.includes('/api/v1/roles')) return jsonResponse({ success: true, data: [{ id: 'r1', name: 'Admin' }] });
-      if (url.includes('/api/v1/users/1') && init?.method === 'PATCH') {
-        return jsonResponse({ success: true, data: { ...sampleUser, firstName: 'Updated' } });
-      }
-      return jsonResponse({ success: true, data: { items: [sampleUser], total: 1, page: 1, pageSize: 20 } });
+    apiGet.mockImplementation((url: string) => {
+      if (url.includes('/roles')) return axiosResponse({ success: true, data: [{ id: 'r1', name: 'Admin' }] });
+      return axiosResponse({ success: true, data: { items: [sampleUser], total: 1, page: 1, pageSize: 20 } });
     });
-    global.fetch = fetchMock as any;
+    apiPatch.mockImplementation((url: string) => {
+      if (url.includes('/users/1')) return axiosResponse({ success: true, data: { ...sampleUser, firstName: 'Updated' } });
+      return Promise.reject(new Error('unexpected patch'));
+    });
 
     renderWithClient(<UsersPage />);
     await waitFor(() => expect(screen.getByText('a@b.com')).toBeInTheDocument());
@@ -57,31 +72,29 @@ describe('UsersPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => {
-      const patchCall = fetchMock.mock.calls.find(([url, init]: any[]) => url.includes('/api/v1/users/1') && init?.method === 'PATCH');
+      const patchCall = apiPatch.mock.calls.find(([url]: any[]) => url.includes('/users/1'));
       expect(patchCall).toBeTruthy();
-      const body = JSON.parse(patchCall![1].body);
-      expect(body.firstName).toBe('Updated');
+      expect(patchCall![1].firstName).toBe('Updated');
     });
 
-    // refetch: GET /api/v1/users called again after the mutation invalidates the query
+    // refetch: GET /users called again after the mutation invalidates the query
     await waitFor(() => {
-      const getCalls = fetchMock.mock.calls.filter(([url, init]: any[]) => url.includes('/api/v1/users?') && !init?.method);
+      const getCalls = apiGet.mock.calls.filter(([url]: any[]) => url === '/users');
       expect(getCalls.length).toBeGreaterThanOrEqual(2);
     });
   });
 
   it('shows an error toast when create fails instead of silently succeeding', async () => {
-    const fetchMock = vi.fn((url: string, init?: any) => {
-      if (url.includes('/api/v1/roles')) return jsonResponse({ success: true, data: [{ id: 'r1', name: 'Admin' }] });
-      if (url === '/api/v1/users' && init?.method === 'POST') {
-        return jsonResponse({ success: false, error: { message: 'Email already exists' } }, false, 409);
-      }
-      return jsonResponse({ success: true, data: { items: [], total: 0, page: 1, pageSize: 20 } });
+    apiGet.mockImplementation((url: string) => {
+      if (url.includes('/roles')) return axiosResponse({ success: true, data: [{ id: 'r1', name: 'Admin' }] });
+      return axiosResponse({ success: true, data: { items: [], total: 0, page: 1, pageSize: 20 } });
     });
-    global.fetch = fetchMock as any;
+    apiPost.mockImplementation(() =>
+      Promise.reject({ response: { status: 409, data: { success: false, error: { message: 'Email already exists' } } } })
+    );
 
     renderWithClient(<UsersPage />);
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await waitFor(() => expect(apiGet).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole('button', { name: /new user/i }));
     await waitFor(() => expect(screen.getByRole('button', { name: /^create$/i })).toBeInTheDocument());

@@ -1,5 +1,6 @@
 import { roleService } from '../src/services/role.service';
 import { prisma } from '../src/lib/prisma';
+import { RoleName } from '@inventory/shared';
 
 describe('roleService', () => {
   let actorUserId: string;
@@ -26,8 +27,20 @@ describe('roleService', () => {
     await prisma.$disconnect();
   });
 
-  it('rejects deleting/renaming a system role via setPermissions on nonexistent role', async () => {
+  it('rejects setPermissions on a nonexistent role', async () => {
     await expect(roleService.setPermissions('nonexistent-id', [], actorUserId)).rejects.toThrow();
+  });
+
+  it('allows setPermissions on a system role', async () => {
+    const role = await prisma.role.upsert({
+      where: { name: RoleName.DOCTOR },
+      update: {},
+      create: { name: RoleName.DOCTOR, isSystem: true },
+    });
+    expect(role.isSystem).toBe(true);
+    const perms = await prisma.permission.findMany({ take: 1 });
+    const result = await roleService.setPermissions(role.id, perms.map((p) => p.id), actorUserId);
+    expect(result).toBeDefined();
   });
 
   it('creates a custom role and assigns permissions', async () => {

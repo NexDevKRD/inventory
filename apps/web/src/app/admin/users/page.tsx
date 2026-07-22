@@ -8,16 +8,12 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { UserFormDrawer } from './UserFormDrawer';
 
-async function ensureOk(response: Response) {
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.error?.message ?? `Request failed (${response.status})`);
-  }
-  return response;
+function extractErrorMessage(err: any, fallback: string) {
+  return err?.response?.data?.error?.message ?? fallback;
 }
 
 export default function UsersPage() {
-  const { accessToken } = useAuth();
+  const { apiClient } = useAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -26,30 +22,36 @@ export default function UsersPage() {
 
   const usersQuery = useQuery({
     queryKey: ['users', page],
-    queryFn: () => fetch(`/api/v1/users?page=${page}&pageSize=20`, { headers: { Authorization: `Bearer ${accessToken}` } }).then((r) => r.json()).then((r) => r.data),
+    queryFn: async () => {
+      const res = await apiClient.get('/users', { params: { page, pageSize: 20 } });
+      return res.data.data;
+    },
   });
 
   const rolesQuery = useQuery({
     queryKey: ['roles'],
-    queryFn: () => fetch('/api/v1/roles', { headers: { Authorization: `Bearer ${accessToken}` } }).then((r) => r.json()).then((r) => r.data),
+    queryFn: async () => {
+      const res = await apiClient.get('/roles');
+      return res.data.data;
+    },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => fetch('/api/v1/users', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }, body: JSON.stringify(data) }).then(ensureOk),
+    mutationFn: (data: any) => apiClient.post('/users', data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
-    onError: (err: any) => toast.error(err?.message ?? 'Failed to create user'),
+    onError: (err: any) => toast.error(extractErrorMessage(err, 'Failed to create user')),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => fetch(`/api/v1/users/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }, body: JSON.stringify(data) }).then(ensureOk),
+    mutationFn: ({ id, data }: { id: string; data: any }) => apiClient.patch(`/users/${id}`, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
-    onError: (err: any) => toast.error(err?.message ?? 'Failed to update user'),
+    onError: (err: any) => toast.error(extractErrorMessage(err, 'Failed to update user')),
   });
 
   const deactivateMutation = useMutation({
-    mutationFn: (id: string) => fetch(`/api/v1/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } }).then(ensureOk),
+    mutationFn: (id: string) => apiClient.delete(`/users/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
-    onError: (err: any) => toast.error(err?.message ?? 'Failed to deactivate user'),
+    onError: (err: any) => toast.error(extractErrorMessage(err, 'Failed to deactivate user')),
   });
 
   return (

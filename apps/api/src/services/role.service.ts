@@ -1,6 +1,6 @@
 import { roleRepository } from '../repositories/role.repository';
 import { auditLogRepository } from '../repositories/auditLog.repository';
-import { NotFoundError, ForbiddenError } from '../lib/errors';
+import { NotFoundError } from '../lib/errors';
 import { CreateRoleInput } from '@inventory/shared';
 
 export const roleService = {
@@ -18,7 +18,6 @@ export const roleService = {
   async setPermissions(roleId: string, permissionIds: string[], actorUserId: string) {
     const role = await roleRepository.findById(roleId);
     if (!role) throw new NotFoundError('Role not found');
-    if (role.isSystem) throw new ForbiddenError('Cannot modify permissions of a system role via this endpoint yet');
     const result = await roleRepository.setPermissions(roleId, permissionIds);
     await auditLogRepository.create({ userId: actorUserId, action: 'ROLE_PERMISSIONS_CHANGED', entityType: 'Role', entityId: roleId, newValue: { permissionIds } });
     return result;
