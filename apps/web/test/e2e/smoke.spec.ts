@@ -8,7 +8,9 @@ test('super admin logs in, creates a user, assigns a role, logs out', async ({ p
 
   await expect(page).toHaveURL(/dashboard/);
 
-  await page.goto('/admin/users');
+  // Navigate via in-app link (not page.goto) to preserve the in-memory auth session.
+  await page.getByRole('link', { name: /^users$/i }).click();
+  await expect(page).toHaveURL(/\/admin\/users/);
   await page.getByRole('button', { name: /new user/i }).click();
   const email = `e2e.${Date.now()}@example.com`;
   await page.locator('input[name=email]').fill(email);
