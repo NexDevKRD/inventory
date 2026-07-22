@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { DataTable } from '../src/components/ui/DataTable';
 
 describe('DataTable', () => {
-  const columns = [{ key: 'name', header: 'Name' }];
+  const columns: { key: 'name'; header: string }[] = [{ key: 'name', header: 'Name' }];
   const rows = [{ name: 'Alice' }, { name: 'Bob' }];
 
   it('renders rows', () => {
