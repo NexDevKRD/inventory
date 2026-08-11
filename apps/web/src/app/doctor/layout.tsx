@@ -1,6 +1,4 @@
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
-import { RequireAuth } from '@/components/layout/RequireAuth';
+import { AppShell } from '@/components/layout/AppShell';
 
 const items = [
   { label: 'Dashboard', href: '/doctor/dashboard' },
@@ -13,14 +11,8 @@ const items = [
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RequireAuth>
-      <div className="flex min-h-screen">
-        <Sidebar items={items} title="Doctor Portal" />
-        <div className="flex-1">
-          <TopNav />
-          <main className="p-6">{children}</main>
-        </div>
-      </div>
-    </RequireAuth>
+    <AppShell items={items} title="Doctor Portal">
+      {children}
+    </AppShell>
   );
 }
