@@ -17,7 +17,7 @@ export function AppShell({
       <div className="flex min-h-screen bg-canvas">
         <Sidebar items={items} title={title} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopNav />
+          <TopNav items={items} title={title} />
           <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 p-4 sm:p-6 lg:p-8">{children}</main>
         </div>
       </div>
