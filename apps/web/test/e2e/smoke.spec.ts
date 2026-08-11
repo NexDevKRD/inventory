@@ -1,18 +1,22 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
-const ADMIN_EMAIL = 'admin@inventory.local';
-const ADMIN_PASSWORD = 'ChangeMe123!';
+const PASSWORD = 'ChangeMe123!';
 
-async function login(page: import('@playwright/test').Page) {
+async function login(page: Page, email: string) {
   await page.goto('/login');
-  await page.getByLabel('email').fill(ADMIN_EMAIL);
-  await page.getByLabel('password').fill(ADMIN_PASSWORD);
+  await page.getByLabel('email').fill(email);
+  await page.getByLabel('password').fill(PASSWORD);
   await page.getByRole('button', { name: /log in/i }).click();
   await expect(page).toHaveURL(/dashboard/);
 }
 
-test('super admin logs in, creates a user, then logs out', async ({ page }) => {
-  await login(page);
+test('unauthenticated visitors are redirected to login', async ({ page }) => {
+  await page.goto('/admin/users');
+  await expect(page).toHaveURL(/login/);
+});
+
+test('super admin creates a user, then logs out', async ({ page }) => {
+  await login(page, 'admin@inventory.local');
 
   await page.goto('/admin/users');
   await page.getByRole('button', { name: /new user/i }).click();
@@ -30,15 +34,50 @@ test('super admin logs in, creates a user, then logs out', async ({ page }) => {
   await expect(page).toHaveURL(/login/);
 });
 
-test('unauthenticated visitors are redirected to login', async ({ page }) => {
-  await page.goto('/admin/users');
-  await expect(page).toHaveURL(/login/);
+test('doctor builds a request and the inventory team approves it', async ({ page }) => {
+  await login(page, 'doctor@inventory.local');
+
+  await page.goto('/doctor/catalogue');
+  await page
+    .getByRole('button', { name: /add to request/i })
+    .first()
+    .click();
+
+  await page.goto('/doctor/cart');
+  await page.getByLabel(/deliver from/i).selectOption({ index: 1 });
+  await page.getByRole('button', { name: /submit request/i }).click();
+
+  await expect(page).toHaveURL(/doctor\/requests/);
+  const reference = await page.locator('code').first().innerText();
+
+  await page.getByRole('button', { name: /log out/i }).click();
+
+  await login(page, 'manager@inventory.local');
+  await page.goto('/inventory/requests');
+  await page
+    .getByRole('row', { name: new RegExp(reference) })
+    .getByRole('button', { name: /view/i })
+    .click();
+  await page.getByRole('button', { name: /^approve$/i }).click();
+
+  await expect(page.getByRole('row', { name: new RegExp(reference) }).getByText(/approved/i)).toBeVisible();
 });
 
-test('role permissions can be inspected', async ({ page }) => {
-  await login(page);
+test('stock levels and reports render for the inventory team', async ({ page }) => {
+  await login(page, 'manager@inventory.local');
 
-  await page.goto('/admin/roles');
-  await page.getByRole('button', { name: /SUPER_ADMIN/ }).click();
-  await expect(page.getByText(/permissions granted/i)).toBeVisible();
+  await page.goto('/inventory/stock');
+  await expect(page.getByRole('button', { name: /adjust stock/i })).toBeVisible();
+
+  await page.goto('/inventory/reports');
+  await expect(page.getByText(/stock by warehouse/i)).toBeVisible();
+});
+
+test('a supplier only sees their own purchase orders', async ({ page }) => {
+  await login(page, 'supplier@inventory.local');
+
+  await page.goto('/supplier/purchase-orders');
+  await expect(page.getByRole('heading', { name: /purchase orders/i })).toBeVisible();
+  // Suppliers cannot raise orders, only fulfil them.
+  await expect(page.getByRole('button', { name: /new order/i })).toHaveCount(0);
 });

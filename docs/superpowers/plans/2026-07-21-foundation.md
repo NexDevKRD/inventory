@@ -107,7 +107,7 @@ inventory/
 **Interfaces:**
 - Produces: workspaces `apps/*`, `packages/*`; `DATABASE_URL` env var consumed by Task 3.
 
-- [ ] **Step 1: Root package.json**
+- [x] **Step 1: Root package.json**
 
 ```json
 {
@@ -123,7 +123,7 @@ inventory/
 }
 ```
 
-- [ ] **Step 2: tsconfig.base.json**
+- [x] **Step 2: tsconfig.base.json**
 
 ```json
 {
@@ -140,7 +140,7 @@ inventory/
 }
 ```
 
-- [ ] **Step 3: docker-compose.yml**
+- [x] **Step 3: docker-compose.yml**
 
 ```yaml
 services:
@@ -158,7 +158,7 @@ volumes:
   pgdata:
 ```
 
-- [ ] **Step 4: .env.example (root)**
+- [x] **Step 4: .env.example (root)**
 
 ```
 DATABASE_URL="postgresql://inventory:inventory@localhost:5432/inventory_dev?schema=public"
@@ -169,7 +169,7 @@ WEB_URL="http://localhost:3000"
 API_PORT=4000
 ```
 
-- [ ] **Step 5: .gitignore**
+- [x] **Step 5: .gitignore**
 
 ```
 node_modules/
@@ -179,12 +179,12 @@ dist/
 *.log
 ```
 
-- [ ] **Step 6: Start Postgres and verify**
+- [x] **Step 6: Start Postgres and verify**
 
 Run: `docker compose up -d && docker compose ps`
 Expected: `postgres` service state `running (healthy)` or `Up`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add package.json tsconfig.base.json docker-compose.yml .gitignore .env.example
@@ -202,7 +202,7 @@ git commit -m "chore: scaffold monorepo workspaces and postgres"
 **Interfaces:**
 - Produces: `RoleName` enum, `PermissionKey` type, `loginSchema`, `forgotPasswordSchema`, `resetPasswordSchema`, `activateAccountSchema`, `createUserSchema`, `updateUserSchema`, `createRoleSchema`, `updateRolePermissionsSchema` — all imported by both `apps/api` and `apps/web`.
 
-- [ ] **Step 1: package.json**
+- [x] **Step 1: package.json**
 
 ```json
 {
@@ -215,7 +215,7 @@ git commit -m "chore: scaffold monorepo workspaces and postgres"
 }
 ```
 
-- [ ] **Step 2: enums.ts**
+- [x] **Step 2: enums.ts**
 
 ```typescript
 export const RoleName = {
@@ -238,7 +238,7 @@ export const PermissionKey = {
 export type PermissionKey = (typeof PermissionKey)[keyof typeof PermissionKey];
 ```
 
-- [ ] **Step 3: Write failing test for schemas**
+- [x] **Step 3: Write failing test for schemas**
 
 `packages/shared/test/schemas.test.ts`:
 ```typescript
@@ -266,12 +266,12 @@ describe('createUserSchema', () => {
 });
 ```
 
-- [ ] **Step 4: Run test to verify it fails**
+- [x] **Step 4: Run test to verify it fails**
 
 Run: `npm test -w packages/shared`
 Expected: FAIL — cannot find module `../src` exports `loginSchema`/`createUserSchema`.
 
-- [ ] **Step 5: Implement schemas**
+- [x] **Step 5: Implement schemas**
 
 `packages/shared/src/schemas/auth.ts`:
 ```typescript
@@ -346,12 +346,12 @@ export * from './schemas/user';
 export * from './schemas/role';
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
 
 Run: `npm test -w packages/shared`
 Expected: PASS (3 tests)
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add packages/shared
@@ -368,7 +368,7 @@ git commit -m "feat: shared enums and zod schemas for auth/user/role"
 **Interfaces:**
 - Produces: Prisma client singleton `prisma` from `src/lib/prisma.ts`; DB tables `User, Role, Permission, UserRole, RolePermission, RefreshToken, PasswordResetToken, AuditLog, SystemSetting`.
 
-- [ ] **Step 1: apps/api/package.json**
+- [x] **Step 1: apps/api/package.json**
 
 ```json
 {
@@ -407,7 +407,7 @@ git commit -m "feat: shared enums and zod schemas for auth/user/role"
 }
 ```
 
-- [ ] **Step 2: prisma/schema.prisma** (full foundation schema from design spec)
+- [x] **Step 2: prisma/schema.prisma** (full foundation schema from design spec)
 
 ```prisma
 generator client {
@@ -524,7 +524,7 @@ model SystemSetting {
 }
 ```
 
-- [ ] **Step 3: src/lib/prisma.ts**
+- [x] **Step 3: src/lib/prisma.ts**
 
 ```typescript
 import { PrismaClient } from '@prisma/client';
@@ -538,12 +538,12 @@ export const prisma = global.__prisma ?? new PrismaClient();
 if (process.env.NODE_ENV !== 'production') global.__prisma = prisma;
 ```
 
-- [ ] **Step 4: Run migration**
+- [x] **Step 4: Run migration**
 
 Run: `npm install && npm run prisma:migrate -w apps/api -- --name init`
 Expected: migration folder created, tables exist in `inventory_dev` DB.
 
-- [ ] **Step 5: seed.ts**
+- [x] **Step 5: seed.ts**
 
 ```typescript
 import { PrismaClient } from '@prisma/client';
@@ -603,12 +603,12 @@ async function main() {
 main().finally(() => prisma.$disconnect());
 ```
 
-- [ ] **Step 6: Run seed and verify**
+- [x] **Step 6: Run seed and verify**
 
 Run: `npm run prisma:seed -w apps/api`
 Expected: console prints "Seed complete..."; `SELECT * FROM "User"` shows one row.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/api/package.json apps/api/prisma apps/api/src/lib/prisma.ts
@@ -626,7 +626,7 @@ git commit -m "feat: prisma schema, migration, and seed script"
 **Interfaces:**
 - Produces: `AppError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ValidationError`, `ConflictError` classes (each with `statusCode`, `code`, `message`); `signAccessToken(payload)`, `verifyAccessToken(token)`, `signRefreshToken(userId)`, `verifyRefreshToken(token)`; `hashPassword`, `comparePassword`, `hashToken(raw)`.
 
-- [ ] **Step 1: lib/errors.ts**
+- [x] **Step 1: lib/errors.ts**
 
 ```typescript
 export class AppError extends Error {
@@ -651,7 +651,7 @@ export class ConflictError extends AppError {
 }
 ```
 
-- [ ] **Step 2: Write failing tests for jwt/hash**
+- [x] **Step 2: Write failing tests for jwt/hash**
 
 `apps/api/test/jwt.test.ts`:
 ```typescript
@@ -692,12 +692,12 @@ describe('hash lib', () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 Run: `npm test -w apps/api -- jwt hash`
 Expected: FAIL — modules `../src/lib/jwt`, `../src/lib/hash` do not exist.
 
-- [ ] **Step 4: Implement lib/jwt.ts**
+- [x] **Step 4: Implement lib/jwt.ts**
 
 ```typescript
 import jwt from 'jsonwebtoken';
@@ -728,7 +728,7 @@ export function verifyRefreshToken(token: string): { userId: string } {
 }
 ```
 
-- [ ] **Step 5: Implement lib/hash.ts**
+- [x] **Step 5: Implement lib/hash.ts**
 
 ```typescript
 import bcrypt from 'bcryptjs';
@@ -745,12 +745,12 @@ export function hashToken(raw: string): string {
 }
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [x] **Step 6: Run tests to verify they pass**
 
 Run: `npm test -w apps/api -- jwt hash`
 Expected: PASS (5 tests). Set `JWT_ACCESS_SECRET`/`JWT_REFRESH_SECRET` in `apps/api/.env` (copy from root `.env.example` values) beforehand.
 
-- [ ] **Step 7: Implement middleware/errorHandler.ts**
+- [x] **Step 7: Implement middleware/errorHandler.ts**
 
 ```typescript
 import { ErrorRequestHandler } from 'express';
@@ -766,7 +766,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 };
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/api/src/lib/errors.ts apps/api/src/lib/jwt.ts apps/api/src/lib/hash.ts apps/api/src/middleware/errorHandler.ts apps/api/test/jwt.test.ts apps/api/test/hash.test.ts
@@ -784,7 +784,7 @@ git commit -m "feat: error hierarchy, jwt/hash libs, central error handler"
 - Consumes: `prisma` from Task 3.
 - Produces: `userRepository.{findByEmail, findById, create, update, softDelete, list}`; `roleRepository.{findByName, findById, list, create, setPermissions}`; `refreshTokenRepository.{create, findByHash, revoke, revokeAllForUser}`; `auditLogRepository.{create, list}`. Used by services in Task 6+.
 
-- [ ] **Step 1: user.repository.ts**
+- [x] **Step 1: user.repository.ts**
 
 ```typescript
 import { prisma } from '../lib/prisma';
@@ -837,7 +837,7 @@ export const userRepository = {
 };
 ```
 
-- [ ] **Step 2: role.repository.ts**
+- [x] **Step 2: role.repository.ts**
 
 ```typescript
 import { prisma } from '../lib/prisma';
@@ -867,7 +867,7 @@ export const roleRepository = {
 };
 ```
 
-- [ ] **Step 3: refreshToken.repository.ts**
+- [x] **Step 3: refreshToken.repository.ts**
 
 ```typescript
 import { prisma } from '../lib/prisma';
@@ -888,7 +888,7 @@ export const refreshTokenRepository = {
 };
 ```
 
-- [ ] **Step 4: auditLog.repository.ts**
+- [x] **Step 4: auditLog.repository.ts**
 
 ```typescript
 import { prisma } from '../lib/prisma';
@@ -910,12 +910,12 @@ export const auditLogRepository = {
 };
 ```
 
-- [ ] **Step 5: Verify build**
+- [x] **Step 5: Verify build**
 
 Run: `npx tsc --noEmit -p apps/api`
 Expected: no type errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/api/src/repositories
@@ -934,7 +934,7 @@ git commit -m "feat: user/role/refreshToken/auditLog repositories"
 - Consumes: `userRepository`, `refreshTokenRepository`, `auditLogRepository` (Task 5); `hashPassword/comparePassword/hashToken` (Task 4); `signAccessToken/signRefreshToken/verifyRefreshToken` (Task 4).
 - Produces: `authService.{login, refresh, logout, requestPasswordReset, resetPassword}`. Used by `auth.controller.ts` in Task 7.
 
-- [ ] **Step 1: test/setup.ts** (runs migrations against test DB before suite)
+- [x] **Step 1: test/setup.ts** (runs migrations against test DB before suite)
 
 ```typescript
 import { execSync } from 'child_process';
@@ -947,7 +947,7 @@ export default async function setup() {
 
 Add to `apps/api/package.json` jest config: `"globalSetup": "<rootDir>/test/setup.ts"`.
 
-- [ ] **Step 2: Write failing tests**
+- [x] **Step 2: Write failing tests**
 
 `apps/api/test/auth.service.test.ts`:
 ```typescript
@@ -1004,12 +1004,12 @@ describe('authService', () => {
 });
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `npm test -w apps/api -- auth.service`
 Expected: FAIL — `../src/services/auth.service` does not exist.
 
-- [ ] **Step 4: Implement auth.service.ts**
+- [x] **Step 4: Implement auth.service.ts**
 
 ```typescript
 import { userRepository } from '../repositories/user.repository';
@@ -1126,12 +1126,12 @@ export const authService = {
 };
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npm test -w apps/api -- auth.service`
 Expected: PASS (3 tests, ~7s due to lockout loop).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/api/src/services/auth.service.ts apps/api/test/auth.service.test.ts apps/api/test/setup.ts
@@ -1150,7 +1150,7 @@ git commit -m "feat: auth service with lockout and refresh rotation"
 - Consumes: `verifyAccessToken` (Task 4), `ForbiddenError`/`UnauthorizedError` (Task 4).
 - Produces: `authenticate` (Express middleware, sets `req.user: {userId, roles, permissions}`), `authorize(permissionKey: string)` (returns middleware), `validate(schema: ZodSchema)` (returns middleware validating `req.body`).
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/api/test/authorize.middleware.test.ts`:
 ```typescript
@@ -1178,12 +1178,12 @@ describe('authorize middleware', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/api -- authorize.middleware`
 Expected: FAIL — `../src/middleware/authorize` does not exist.
 
-- [ ] **Step 3: Implement middleware/authenticate.ts**
+- [x] **Step 3: Implement middleware/authenticate.ts**
 
 ```typescript
 import { RequestHandler } from 'express';
@@ -1211,7 +1211,7 @@ export const authenticate: RequestHandler = (req, _res, next) => {
 };
 ```
 
-- [ ] **Step 4: Implement middleware/authorize.ts**
+- [x] **Step 4: Implement middleware/authorize.ts**
 
 ```typescript
 import { RequestHandler } from 'express';
@@ -1226,7 +1226,7 @@ export function authorize(permissionKey: string): RequestHandler {
 }
 ```
 
-- [ ] **Step 5: Implement middleware/validate.ts**
+- [x] **Step 5: Implement middleware/validate.ts**
 
 ```typescript
 import { RequestHandler } from 'express';
@@ -1243,12 +1243,12 @@ export function validate(schema: ZodSchema): RequestHandler {
 }
 ```
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
 
 Run: `npm test -w apps/api -- authorize.middleware`
 Expected: PASS (2 tests)
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/api/src/middleware
@@ -1267,7 +1267,7 @@ git commit -m "feat: authenticate/authorize/validate middleware"
 - Consumes: `authService` (Task 6), `validate` (Task 7), shared schemas (Task 2).
 - Produces: Express `app` export for Supertest; routes `POST /api/v1/auth/login|refresh|logout|forgot-password|reset-password`.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/api/test/auth.routes.test.ts`:
 ```typescript
@@ -1308,12 +1308,12 @@ describe('POST /api/v1/auth/login', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/api -- auth.routes`
 Expected: FAIL — `../src/app` does not exist.
 
-- [ ] **Step 3: Implement controllers/auth.controller.ts**
+- [x] **Step 3: Implement controllers/auth.controller.ts**
 
 ```typescript
 import { RequestHandler } from 'express';
@@ -1364,7 +1364,7 @@ export const resetPassword: RequestHandler = async (req, res, next) => {
 };
 ```
 
-- [ ] **Step 4: Implement routes/auth.routes.ts**
+- [x] **Step 4: Implement routes/auth.routes.ts**
 
 ```typescript
 import { Router } from 'express';
@@ -1384,7 +1384,7 @@ authRouter.post('/forgot-password', validate(forgotPasswordSchema), forgotPasswo
 authRouter.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 ```
 
-- [ ] **Step 5: Implement routes/index.ts, app.ts, server.ts**
+- [x] **Step 5: Implement routes/index.ts, app.ts, server.ts**
 
 `routes/index.ts`:
 ```typescript
@@ -1424,12 +1424,12 @@ app.listen(port, () => console.log(`API listening on :${port}`));
 
 Add `cookie-parser`, `@types/cookie-parser`, `dotenv` to `apps/api/package.json` dependencies.
 
-- [ ] **Step 6: Run test to verify it passes**
+- [x] **Step 6: Run test to verify it passes**
 
 Run: `npm test -w apps/api -- auth.routes`
 Expected: PASS (3 tests)
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/api/src apps/api/package.json
@@ -1449,7 +1449,7 @@ git commit -m "feat: auth routes, controller, and express app wiring"
 - Consumes: `userRepository`, `roleRepository` (Task 5), `hashPassword` (Task 4), `auditLogRepository` (Task 5).
 - Produces: `userService.{create, update, deactivate, list, getById}`. Routes: `GET/POST /api/v1/users`, `GET/PATCH /api/v1/users/:id`, `DELETE /api/v1/users/:id` — all behind `authenticate` + `authorize('user.create'|'user.update'|'user.deactivate')`.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/api/test/user.service.test.ts`:
 ```typescript
@@ -1486,12 +1486,12 @@ describe('userService', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/api -- user.service`
 Expected: FAIL — `../src/services/user.service` does not exist.
 
-- [ ] **Step 3: Implement services/user.service.ts**
+- [x] **Step 3: Implement services/user.service.ts**
 
 ```typescript
 import crypto from 'crypto';
@@ -1545,12 +1545,12 @@ export const userService = {
 };
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npm test -w apps/api -- user.service`
 Expected: PASS (2 tests)
 
-- [ ] **Step 5: Implement controllers/user.controller.ts and routes/user.routes.ts**
+- [x] **Step 5: Implement controllers/user.controller.ts and routes/user.routes.ts**
 
 ```typescript
 // controllers/user.controller.ts
@@ -1611,7 +1611,7 @@ userRouter.delete('/:id', authorize(PermissionKey.USER_DEACTIVATE), deactivateUs
 
 Register in `routes/index.ts`: `apiRouter.use('/users', userRouter);`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/api/src/services/user.service.ts apps/api/src/controllers/user.controller.ts apps/api/src/routes/user.routes.ts apps/api/src/routes/index.ts apps/api/test/user.service.test.ts
@@ -1631,7 +1631,7 @@ git commit -m "feat: user CRUD service, controller, and routes"
 - Consumes: `roleRepository`, `auditLogRepository` (Task 5).
 - Produces: `roleService.{list, create, setPermissions, listPermissions}`; `auditLogService.list`. Routes `GET/POST /api/v1/roles`, `PATCH /api/v1/roles/:id/permissions`, `GET /api/v1/audit-logs` behind `authorize(PermissionKey.ROLE_MANAGE)` / `authorize(PermissionKey.AUDIT_LOG_VIEW)`.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/api/test/role.service.test.ts`:
 ```typescript
@@ -1657,12 +1657,12 @@ describe('roleService', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/api -- role.service`
 Expected: FAIL — module missing.
 
-- [ ] **Step 3: Implement services/role.service.ts**
+- [x] **Step 3: Implement services/role.service.ts**
 
 ```typescript
 import { roleRepository } from '../repositories/role.repository';
@@ -1695,12 +1695,12 @@ export const roleService = {
 
 Note: test above expects `setPermissions` on a *nonexistent* role to throw `NotFoundError` — matches implementation. System-role permission edits are intentionally blocked in foundation scope; Super Admin can still fully configure custom roles.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npm test -w apps/api -- role.service`
 Expected: PASS (2 tests)
 
-- [ ] **Step 5: Implement auditLog.service.ts**
+- [x] **Step 5: Implement auditLog.service.ts**
 
 ```typescript
 import { auditLogRepository } from '../repositories/auditLog.repository';
@@ -1713,7 +1713,7 @@ export const auditLogService = {
 };
 ```
 
-- [ ] **Step 6: Implement controllers + routes for role and auditLog**
+- [x] **Step 6: Implement controllers + routes for role and auditLog**
 
 ```typescript
 // controllers/role.controller.ts
@@ -1788,7 +1788,7 @@ apiRouter.use('/roles', roleRouter);
 apiRouter.use('/audit-logs', auditLogRouter);
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/api/src/services/role.service.ts apps/api/src/services/auditLog.service.ts apps/api/src/controllers/role.controller.ts apps/api/src/controllers/auditLog.controller.ts apps/api/src/routes/role.routes.ts apps/api/src/routes/auditLog.routes.ts apps/api/src/routes/index.ts apps/api/test/role.service.test.ts
@@ -1805,7 +1805,7 @@ git commit -m "feat: role management and audit log read endpoints"
 **Interfaces:**
 - Consumes: `app` (Task 8), `signAccessToken` (Task 4).
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 ```typescript
 import request from 'supertest';
@@ -1826,12 +1826,12 @@ describe('cross-role authorization', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it currently passes (route already enforces authorize)**
+- [x] **Step 2: Run test to verify it currently passes (route already enforces authorize)**
 
 Run: `npm test -w apps/api -- authorization.integration`
 Expected: PASS (2 tests) — confirms Task 9's `authorize(PermissionKey.USER_CREATE)` correctly blocks a doctor token. If it fails, the bug is in `userRouter`'s middleware order from Task 9 — fix before proceeding.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/api/test/authorization.integration.test.ts
@@ -1848,7 +1848,7 @@ git commit -m "test: explicit cross-role unauthorized-access coverage"
 **Interfaces:**
 - Produces: `RootLayout` wrapping every page with `NextIntlClientProvider` + `ThemeProvider`; `dir="rtl"` applied automatically when locale is `ar`/`ku`.
 
-- [ ] **Step 1: package.json**
+- [x] **Step 1: package.json**
 
 ```json
 {
@@ -1887,7 +1887,7 @@ git commit -m "test: explicit cross-role unauthorized-access coverage"
 }
 ```
 
-- [ ] **Step 2: tailwind.config.ts + postcss.config.js**
+- [x] **Step 2: tailwind.config.ts + postcss.config.js**
 
 ```typescript
 // tailwind.config.ts
@@ -1914,7 +1914,7 @@ export default {
 module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
 ```
 
-- [ ] **Step 3: src/app/globals.css**
+- [x] **Step 3: src/app/globals.css**
 
 ```css
 @tailwind base;
@@ -1922,7 +1922,7 @@ module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
 @tailwind utilities;
 ```
 
-- [ ] **Step 4: i18n setup**
+- [x] **Step 4: i18n setup**
 
 `src/i18n/request.ts`:
 ```typescript
@@ -1952,7 +1952,7 @@ export default getRequestConfig(async ({ locale }) => ({
 { "auth": { "login": "چوونەژوورەوە", "email": "ئیمەیل", "password": "وشەی نهێنی" }, "nav": { "dashboard": "داشبۆرد", "users": "بەکارهێنەران", "roles": "ڕۆڵ و دەسەڵاتەکان", "auditLogs": "تۆمارەکانی چاودێری" } }
 ```
 
-- [ ] **Step 5: ThemeProvider (dark mode)**
+- [x] **Step 5: ThemeProvider (dark mode)**
 
 `src/components/layout/ThemeProvider.tsx`:
 ```typescript
@@ -1975,7 +1975,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export const useTheme = () => useContext(ThemeContext);
 ```
 
-- [ ] **Step 6: Root layout**
+- [x] **Step 6: Root layout**
 
 `src/app/layout.tsx`:
 ```typescript
@@ -2001,12 +2001,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 }
 ```
 
-- [ ] **Step 7: Verify it builds and runs**
+- [x] **Step 7: Verify it builds and runs**
 
 Run: `npm run dev -w apps/web` then visit `http://localhost:3000`
 Expected: blank page renders with no console errors (no routes yet besides layout).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/web
@@ -2024,7 +2024,7 @@ git commit -m "chore: scaffold next.js app with tailwind, i18n, and theme provid
 **Interfaces:**
 - Produces: `apiClient` (Axios instance with baseURL `/api/v1`, `withCredentials: true`, request interceptor injecting bearer token from `AuthContext`, response interceptor retrying once after `/auth/refresh` on 401); `AuthProvider`, `useAuth()` returning `{ user, accessToken, login, logout }`.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/web/test/apiClient.test.ts`:
 ```typescript
@@ -2040,12 +2040,12 @@ describe('createApiClient', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/web -- apiClient`
 Expected: FAIL — `createApiClient` not exported.
 
-- [ ] **Step 3: Implement lib/apiClient.ts**
+- [x] **Step 3: Implement lib/apiClient.ts**
 
 ```typescript
 import axios, { AxiosInstance } from 'axios';
@@ -2086,12 +2086,12 @@ export function createApiClient(getAccessToken: () => string | null, onRefreshFa
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npm test -w apps/web -- apiClient`
 Expected: PASS (1 test)
 
-- [ ] **Step 5: Implement lib/AuthContext.tsx**
+- [x] **Step 5: Implement lib/AuthContext.tsx**
 
 ```typescript
 'use client';
@@ -2142,7 +2142,7 @@ export const useAuth = () => {
 };
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/web/src/lib/apiClient.ts apps/web/src/lib/AuthContext.tsx apps/web/test/apiClient.test.ts
@@ -2160,7 +2160,7 @@ git commit -m "feat: axios client with refresh interceptor and auth context"
 **Interfaces:**
 - Produces: `<StatusBadge status="ACTIVE" />`, `<EmptyState title description />`, `<Skeleton className />`, `<Modal open onClose>`, `<ConfirmDialog open title description onConfirm onCancel>`, `<Drawer open onClose>`, `<FormField label error>`, `<DataTable columns rows page pageSize total onPageChange />` — consumed by pages in Tasks 16-18.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/web/test/DataTable.test.tsx`:
 ```typescript
@@ -2192,12 +2192,12 @@ describe('DataTable', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/web -- DataTable`
 Expected: FAIL — `../src/components/ui/DataTable` does not exist.
 
-- [ ] **Step 3: Implement components/ui/EmptyState.tsx, StatusBadge.tsx, Skeleton.tsx**
+- [x] **Step 3: Implement components/ui/EmptyState.tsx, StatusBadge.tsx, Skeleton.tsx**
 
 ```typescript
 // EmptyState.tsx
@@ -2233,7 +2233,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 }
 ```
 
-- [ ] **Step 4: Implement components/ui/DataTable.tsx**
+- [x] **Step 4: Implement components/ui/DataTable.tsx**
 
 ```typescript
 'use client';
@@ -2286,12 +2286,12 @@ export function DataTable<T extends Record<string, any>>({ columns, rows, page, 
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npm test -w apps/web -- DataTable`
 Expected: PASS (3 tests)
 
-- [ ] **Step 6: Implement remaining components: Modal.tsx, ConfirmDialog.tsx, Drawer.tsx, FormField.tsx**
+- [x] **Step 6: Implement remaining components: Modal.tsx, ConfirmDialog.tsx, Drawer.tsx, FormField.tsx**
 
 ```typescript
 // Modal.tsx
@@ -2350,7 +2350,7 @@ export function FormField({ label, error, children }: { label: string; error?: s
 }
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/web/src/components/ui
@@ -2368,7 +2368,7 @@ git commit -m "feat: shared UI component library (DataTable, Drawer, Modal, etc.
 **Interfaces:**
 - Consumes: `useAuth` (Task 13), `loginSchema`/`resetPasswordSchema`/`activateAccountSchema` (Task 2), `FormField` (Task 14).
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/web/test/LoginForm.test.tsx`:
 ```typescript
@@ -2387,12 +2387,12 @@ describe('LoginPage', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/web -- LoginForm`
 Expected: FAIL — page module does not exist.
 
-- [ ] **Step 3: Implement (auth)/layout.tsx**
+- [x] **Step 3: Implement (auth)/layout.tsx**
 
 ```typescript
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -2400,7 +2400,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-- [ ] **Step 4: Implement (auth)/login/page.tsx**
+- [x] **Step 4: Implement (auth)/login/page.tsx**
 
 ```typescript
 'use client';
@@ -2439,12 +2439,12 @@ export default function LoginPage() {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npm test -w apps/web -- LoginForm`
 Expected: PASS (1 test)
 
-- [ ] **Step 6: Implement forgot-password, reset-password, activate pages**
+- [x] **Step 6: Implement forgot-password, reset-password, activate pages**
 
 ```typescript
 // (auth)/forgot-password/page.tsx
@@ -2511,7 +2511,7 @@ export default function ResetPasswordPage() {
 export { default } from '../reset-password/page';
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add "apps/web/src/app/(auth)"
@@ -2531,7 +2531,7 @@ git commit -m "feat: login, forgot/reset-password, and activation pages"
 - Consumes: `useAuth` (Task 13), `useTheme` (Task 12), `EmptyState` (Task 14).
 - Produces: `<Sidebar items={NavItem[]} />`, `<TopNav />` reused by every layout.
 
-- [ ] **Step 1: Sidebar.tsx**
+- [x] **Step 1: Sidebar.tsx**
 
 ```typescript
 'use client';
@@ -2555,7 +2555,7 @@ export function Sidebar({ items, title }: { items: NavItem[]; title: string }) {
 }
 ```
 
-- [ ] **Step 2: TopNav.tsx + LanguageSwitcher.tsx**
+- [x] **Step 2: TopNav.tsx + LanguageSwitcher.tsx**
 
 ```typescript
 // TopNav.tsx
@@ -2595,7 +2595,7 @@ export function LanguageSwitcher() {
 }
 ```
 
-- [ ] **Step 3: (admin)/layout.tsx** (pattern repeated per group with role-specific nav items)
+- [x] **Step 3: (admin)/layout.tsx** (pattern repeated per group with role-specific nav items)
 
 ```typescript
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -2624,7 +2624,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 }
 ```
 
-- [ ] **Step 4: Repeat layout pattern for (inventory), (doctor), (delivery), (supplier)** with their respective spec page lists as `comingSoon` nav items (Dashboard always real, rest placeholders):
+- [x] **Step 4: Repeat layout pattern for (inventory), (doctor), (delivery), (supplier)** with their respective spec page lists as `comingSoon` nav items (Dashboard always real, rest placeholders):
 
 ```typescript
 // (inventory)/layout.tsx nav items
@@ -2668,7 +2668,7 @@ const items = [
 
 Each layout file follows the exact same structure as `(admin)/layout.tsx` in Step 3, swapping `items` and the `Sidebar` `title` prop (`"Inventory"`, `"Doctor Portal"`, `"Delivery"`, `"Supplier Portal"`).
 
-- [ ] **Step 5: Placeholder dashboard pages** (one per group, identical pattern)
+- [x] **Step 5: Placeholder dashboard pages** (one per group, identical pattern)
 
 ```typescript
 // (admin)/dashboard/page.tsx  (repeat for each group's dashboard/page.tsx)
@@ -2677,12 +2677,12 @@ export default function DashboardPage() {
 }
 ```
 
-- [ ] **Step 6: Manual verification**
+- [x] **Step 6: Manual verification**
 
 Run: `npm run dev -w apps/web`, log in as seeded Super Admin, confirm `/dashboard` shows the admin sidebar with correct nav items and dark-mode toggle works.
 Expected: sidebar renders 7 items, theme toggle switches `dark` class on `<html>`, language switcher reloads with `ar` producing `dir="rtl"`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/web/src/components/layout "apps/web/src/app/(admin)" "apps/web/src/app/(inventory)" "apps/web/src/app/(doctor)" "apps/web/src/app/(delivery)" "apps/web/src/app/(supplier)"
@@ -2700,7 +2700,7 @@ git commit -m "feat: role-gated sidebar/topnav layouts for all six portals"
 **Interfaces:**
 - Consumes: `DataTable`, `Drawer`, `ConfirmDialog`, `StatusBadge`, `FormField` (Task 14); `useAuth` (Task 13); `createUserSchema`/`updateUserSchema` (Task 2); TanStack Query.
 
-- [ ] **Step 1: Write failing test**
+- [x] **Step 1: Write failing test**
 
 `apps/web/test/UsersPage.test.tsx`:
 ```typescript
@@ -2721,12 +2721,12 @@ describe('UsersPage', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm test -w apps/web -- UsersPage`
 Expected: FAIL — page module does not exist.
 
-- [ ] **Step 3: Implement UserFormDrawer.tsx**
+- [x] **Step 3: Implement UserFormDrawer.tsx**
 
 ```typescript
 'use client';
@@ -2758,7 +2758,7 @@ export function UserFormDrawer({ open, onClose, roles, onSubmit }: { open: boole
 }
 ```
 
-- [ ] **Step 4: Implement (admin)/users/page.tsx**
+- [x] **Step 4: Implement (admin)/users/page.tsx**
 
 ```typescript
 'use client';
@@ -2830,12 +2830,12 @@ export default function UsersPage() {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `npm test -w apps/web -- UsersPage`
 Expected: PASS (1 test)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add "apps/web/src/app/(admin)/users"
@@ -2852,7 +2852,7 @@ git commit -m "feat: admin users page with create/deactivate flows"
 **Interfaces:**
 - Consumes: `DataTable` (Task 14), `useAuth` (Task 13), TanStack Query, `/api/v1/roles`, `/api/v1/roles/permissions`, `/api/v1/audit-logs` (Task 10).
 
-- [ ] **Step 1: Implement (admin)/roles/page.tsx**
+- [x] **Step 1: Implement (admin)/roles/page.tsx**
 
 ```typescript
 'use client';
@@ -2922,7 +2922,7 @@ export default function RolesPage() {
 }
 ```
 
-- [ ] **Step 2: Implement (admin)/audit-logs/page.tsx**
+- [x] **Step 2: Implement (admin)/audit-logs/page.tsx**
 
 ```typescript
 'use client';
@@ -2962,12 +2962,12 @@ export default function AuditLogsPage() {
 }
 ```
 
-- [ ] **Step 3: Manual verification**
+- [x] **Step 3: Manual verification**
 
 Run: `npm run dev -w apps/web` + `npm run dev -w apps/api`, log in as Super Admin, visit `/roles` (toggle a permission on the custom test role), visit `/audit-logs` (confirm the `LOGIN` and `ROLE_PERMISSIONS_CHANGED` entries appear).
 Expected: both pages render populated tables, no console errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add "apps/web/src/app/(admin)/roles" "apps/web/src/app/(admin)/audit-logs"
@@ -2984,7 +2984,7 @@ git commit -m "feat: admin roles & permissions page and audit logs page"
 **Interfaces:**
 - Consumes: running `apps/api` (port 4000) and `apps/web` (port 3000) with seeded DB from Task 3.
 
-- [ ] **Step 1: playwright.config.ts**
+- [x] **Step 1: playwright.config.ts**
 
 ```typescript
 import { defineConfig } from '@playwright/test';
@@ -2996,7 +2996,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2: Write smoke test**
+- [x] **Step 2: Write smoke test**
 
 `apps/web/test/e2e/smoke.spec.ts`:
 ```typescript
@@ -3025,12 +3025,12 @@ test('super admin logs in, creates a user, assigns a role, logs out', async ({ p
 });
 ```
 
-- [ ] **Step 3: Run e2e test**
+- [x] **Step 3: Run e2e test**
 
 Run: `docker compose up -d && npm run prisma:migrate -w apps/api && npm run prisma:seed -w apps/api && npm run dev:api -w apps/api & npm run test:e2e -w apps/web`
 Expected: 1 passed.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/web/playwright.config.ts apps/web/test/e2e/smoke.spec.ts

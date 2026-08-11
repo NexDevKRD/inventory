@@ -1,9 +1,8 @@
 # Medical Inventory Platform
 
-Monorepo for the medical inventory platform. This repository currently contains the
-**foundation**: authentication, RBAC, the base database schema, and the role-gated UI
-shell that later sub-projects (products, stock, requests, purchase orders, deliveries)
-build on.
+Monorepo for the medical inventory platform: authentication and RBAC, the product
+catalogue, stock control, doctor requests, purchase orders, and deliveries, behind a
+role-gated UI with a portal per role.
 
 - `apps/api` — Express + Prisma REST API (`/api/v1`)
 - `apps/web` — Next.js 14 App Router frontend
@@ -61,7 +60,16 @@ npm run dev:web   # http://localhost:3000
 The web app proxies `/api/v1/*` to the API (see `apps/web/next.config.mjs`), so the
 browser only ever talks to port 3000.
 
-Seeded super admin: `admin@inventory.local` / `ChangeMe123!`
+The seed creates one account per role, all with password `ChangeMe123!`:
+
+| Email | Role | Sees |
+|---|---|---|
+| `admin@inventory.local` | Super Admin | Everything, plus users/roles/audit logs |
+| `manager@inventory.local` | Inventory Manager | Catalogue, stock, requests, purchase orders, reports |
+| `staff@inventory.local` | Inventory Staff | Same, minus creating products and orders |
+| `doctor@inventory.local` | Doctor | Catalogue, request cart, own request history |
+| `driver@inventory.local` | Delivery Staff | Deliveries assigned to them |
+| `supplier@inventory.local` | Supplier | Purchase orders raised against their company |
 
 ### Docker
 
@@ -91,8 +99,28 @@ Refresh tokens are stored as SHA-256 hashes. Five failed logins lock an account 
 15 minutes.
 
 **Web** uses route groups per role (`/admin`, `/inventory`, `/doctor`, `/delivery`,
-`/supplier`), all rendered through `AppShell`, which gates on session presence.
-Nav entries marked "Soon" are intentional placeholders for later sub-projects.
+`/supplier`), all rendered through `AppShell`, which gates on session presence. Pages
+shared by more than one portal live in `src/features/*` and are mounted by thin route
+files that pass the permission-dependent flags (e.g. `<ProductsPage canEdit />`).
+
+### Domain flows
+
+**Stock** is tracked per product / warehouse / batch. Every change goes through
+`stockService.adjust` or a workflow transition, inside a transaction that writes a
+matching `StockMovement`, so the ledger and the level can never disagree. A change
+that would take a level below zero is rejected.
+
+**Requests:** a doctor fills a cart and submits it; the inventory team approves or
+rejects. Approval deducts the requested quantities from the chosen warehouse,
+consuming the batch that expires soonest first. An approved request can then be
+assigned to delivery staff; marking the delivery *delivered* closes the request as
+fulfilled.
+
+**Purchase orders** move DRAFT → SUBMITTED → APPROVED → RECEIVED (cancellable until
+received). Receiving books the ordered quantities into the destination warehouse,
+tagging the batch with the order reference.
+
+Notifications are generated for the relevant users at each of these transitions.
 
 **Design system:** colors are CSS custom properties in `src/app/globals.css`, surfaced
 to Tailwind as semantic tokens (`canvas`, `surface`, `raised`, `line`, `ink`, `muted`,
@@ -103,7 +131,17 @@ only — no `dark:` variant needed for tokenized colors. Shared primitives live 
 
 **i18n:** next-intl is wired with `en`, `ar`, and `ku`, and RTL flips via the `dir`
 attribute. Only English strings are populated at this stage; the Arabic and Kurdish
-files carry the same key set for the strings that exist.
+files carry the same key set for the strings that exist. Layout-directional classes
+use logical variants (`ltr:` / `rtl:` / `ms-*` / `pe-*`) so RTL does not need a
+separate stylesheet.
+
+### Permissions
+
+`ROLE_PERMISSIONS` in `packages/shared/src/enums.ts` is the single definition of what
+each system role may do. The seed **reconciles** roles against it — re-running
+`npm run prisma:seed -w apps/api` repairs any drift rather than only adding what is
+missing. Add a capability by adding its `PermissionKey`, granting it to the roles that
+need it, re-seeding, and calling `authorize(key)` on the route.
 
 ### Account creation
 
