@@ -16,7 +16,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function decodeAccessToken(token: string): { userId: string; roles: string[]; permissions: string[] } | null {
+function decodeAccessToken(token: string): { userId: string; email?: string; roles: string[]; permissions: string[] } | null {
   try {
     const payload = token.split('.')[1];
     const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAccessToken(newToken);
       const decoded = decodeAccessToken(newToken);
       if (decoded) {
-        setUser((prev) => prev ?? { id: decoded.userId, email: '', roles: decoded.roles, permissions: decoded.permissions });
+        setUser((prev) => prev ?? { id: decoded.userId, email: decoded.email ?? '', roles: decoded.roles, permissions: decoded.permissions });
       }
       return true;
     } catch {

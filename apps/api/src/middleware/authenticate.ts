@@ -5,7 +5,7 @@ import { UnauthorizedError } from '../lib/errors';
 declare global {
   namespace Express {
     interface Request {
-      user?: { userId: string; roles: string[]; permissions: string[] };
+      user?: { userId: string; email: string; roles: string[]; permissions: string[] };
     }
   }
 }
