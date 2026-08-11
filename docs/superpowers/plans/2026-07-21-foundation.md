@@ -3045,3 +3045,23 @@ git commit -m "test: end-to-end smoke test for login, user creation, logout"
 - **Placeholder scan:** no TBD/TODO; "coming soon" nav items are an intentional, spec-approved UI stub for out-of-scope pages, not unfinished logic.
 - **Type consistency:** `CreateUserInput`/`UpdateUserInput`/`CreateRoleInput`/`UpdateRolePermissionsInput` names match between `packages/shared` (Task 2) and every consumer (Tasks 9, 10, 17, 18). `authService` method names (`login`, `refresh`, `logout`, `requestPasswordReset`, `resetPassword`) match controller calls in Task 8. `userRepository`/`roleRepository`/`refreshTokenRepository`/`auditLogRepository` method names from Task 5 match every service call site in Tasks 6, 9, 10.
 - **Scope:** deliberately excludes products/warehouses/stock/orders/deliveries/suppliers/purchase-orders/reports/real notifications/real-time — all deferred to sub-projects 2–7 per the design doc.
+
+---
+
+## Completion note (2026-08-11)
+
+All 19 foundation tasks are implemented and verified. Work done beyond this plan,
+in the same codebase:
+
+- **Design system**: semantic colour tokens as CSS variables (`globals.css`) surfaced
+  to Tailwind, `next/font` Inter, a no-FOUC theme script with persisted dark mode,
+  shared `Button` / `PageHeader` / `Card` / `StatCard` / `Toolbar` primitives, focus-
+  visible rings everywhere, accessible `Modal`/`Drawer` (ESC, focus trap, scroll lock)
+  and a mobile nav for viewports below `md`.
+- **Domain**: categories, suppliers, products, warehouses, batch-level stock with a
+  movement ledger, doctor requests, purchase orders, deliveries, favourites and
+  notifications — schema, API, and UI for every role portal.
+- **Deviation from Task 19**: the smoke spec targets `/admin/users` (not `/users`) and
+  the `Create user` button label, matching what was actually built.
+
+Remaining known gaps are listed in the README.
