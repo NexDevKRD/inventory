@@ -3,14 +3,16 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/AuthContext';
+import { extractErrorMessage } from '@/lib/apiError';
 import { DataTable } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Button } from '@/components/ui/Button';
+import { PlusIcon } from '@/components/ui/icons';
 import { UserFormDrawer } from './UserFormDrawer';
 
-function extractErrorMessage(err: any, fallback: string) {
-  return err?.response?.data?.error?.message ?? fallback;
-}
+const PAGE_SIZE = 20;
 
 export default function UsersPage() {
   const { apiClient } = useAuth();
@@ -23,7 +25,7 @@ export default function UsersPage() {
   const usersQuery = useQuery({
     queryKey: ['users', page],
     queryFn: async () => {
-      const res = await apiClient.get('/users', { params: { page, pageSize: 20 } });
+      const res = await apiClient.get('/users', { params: { page, pageSize: PAGE_SIZE } });
       return res.data.data;
     },
   });
@@ -38,28 +40,49 @@ export default function UsersPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => apiClient.post('/users', data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      toast.success('User created');
+      qc.invalidateQueries({ queryKey: ['users'] });
+    },
     onError: (err: any) => toast.error(extractErrorMessage(err, 'Failed to create user')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => apiClient.patch(`/users/${id}`, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      toast.success('User updated');
+      qc.invalidateQueries({ queryKey: ['users'] });
+    },
     onError: (err: any) => toast.error(extractErrorMessage(err, 'Failed to update user')),
   });
 
   const deactivateMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`/users/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      toast.success('User deactivated');
+      qc.invalidateQueries({ queryKey: ['users'] });
+    },
     onError: (err: any) => toast.error(extractErrorMessage(err, 'Failed to deactivate user')),
   });
 
+  const openCreate = () => {
+    setEditingUser(null);
+    setDrawerOpen(true);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Users</h1>
-        <button onClick={() => { setEditingUser(null); setDrawerOpen(true); }} className="rounded bg-active px-4 py-2 text-sm text-white">New user</button>
-      </div>
+    <>
+      <PageHeader
+        title="Users"
+        description="Create accounts, assign roles, and deactivate access."
+        action={
+          <Button onClick={openCreate}>
+            <PlusIcon className="h-4 w-4" />
+            New user
+          </Button>
+        }
+      />
+
       <DataTable
         columns={[
           { key: 'email', header: 'Email' },
@@ -70,36 +93,68 @@ export default function UsersPage() {
             key: 'id',
             header: 'Actions',
             render: (row: any) => (
-              <div className="flex gap-3">
-                <button onClick={() => { setEditingUser(row); setDrawerOpen(true); }} className="text-sm text-active">Edit</button>
-                <button onClick={() => setConfirmId(row.id)} className="text-sm text-danger">Deactivate</button>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setEditingUser(row);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-danger hover:text-danger"
+                  onClick={() => setConfirmId(row.id)}
+                >
+                  Deactivate
+                </Button>
               </div>
             ),
           },
         ]}
         rows={usersQuery.data?.items ?? []}
         page={page}
-        pageSize={20}
+        pageSize={PAGE_SIZE}
         total={usersQuery.data?.total ?? 0}
         onPageChange={setPage}
+        isLoading={usersQuery.isLoading}
+        isError={usersQuery.isError}
+        onRetry={() => usersQuery.refetch()}
+        emptyTitle="No users yet"
+        emptyDescription="Create the first account to get started."
       />
+
       <UserFormDrawer
         open={drawerOpen}
-        onClose={() => { setDrawerOpen(false); setEditingUser(null); }}
+        onClose={() => {
+          setDrawerOpen(false);
+          setEditingUser(null);
+        }}
         roles={Array.isArray(rolesQuery.data) ? rolesQuery.data : []}
         user={editingUser}
+        submitting={createMutation.isPending || updateMutation.isPending}
         onSubmit={(data) => {
           if (editingUser) updateMutation.mutate({ id: editingUser.id, data });
           else createMutation.mutate(data);
         }}
       />
+
       <ConfirmDialog
         open={!!confirmId}
         title="Deactivate user?"
-        description="They will no longer be able to log in."
-        onConfirm={() => { deactivateMutation.mutate(confirmId!); setConfirmId(null); }}
+        description="They will no longer be able to log in. You can reactivate them later."
+        confirmLabel="Deactivate"
+        loading={deactivateMutation.isPending}
+        onConfirm={() => {
+          deactivateMutation.mutate(confirmId!);
+          setConfirmId(null);
+        }}
         onCancel={() => setConfirmId(null)}
       />
-    </div>
+    </>
   );
 }
