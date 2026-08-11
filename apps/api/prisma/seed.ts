@@ -22,14 +22,20 @@ async function main() {
   );
   const roleByName = new Map(roles.map((r) => [r.name, r]));
 
+  // System roles are defined by ROLE_PERMISSIONS, so the seed reconciles them
+  // exactly — re-running repairs drift instead of only adding what's missing.
   for (const [roleName, keys] of Object.entries(ROLE_PERMISSIONS)) {
     const role = roleByName.get(roleName)!;
-    for (const key of keys) {
-      const permission = permissionByKey.get(key)!;
+    const wanted = keys.map((key) => permissionByKey.get(key)!.id);
+
+    await prisma.rolePermission.deleteMany({
+      where: { roleId: role.id, permissionId: { notIn: wanted } },
+    });
+    for (const permissionId of wanted) {
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: { roleId_permissionId: { roleId: role.id, permissionId } },
         update: {},
-        create: { roleId: role.id, permissionId: permission.id },
+        create: { roleId: role.id, permissionId },
       });
     }
   }
