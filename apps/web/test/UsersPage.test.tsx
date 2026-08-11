@@ -97,13 +97,13 @@ describe('UsersPage', () => {
     await waitFor(() => expect(apiGet).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole('button', { name: /new user/i }));
-    await waitFor(() => expect(screen.getByRole('button', { name: /^create$/i })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /create user/i })).toBeInTheDocument());
 
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'a@b.com' } });
     fireEvent.change(screen.getByLabelText(/first name/i), { target: { value: 'A' } });
     fireEvent.change(screen.getByLabelText(/last name/i), { target: { value: 'B' } });
     fireEvent.change(screen.getByLabelText(/role/i), { target: { value: 'r1' } });
-    fireEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create user/i }));
 
     await waitFor(() => expect(toastError).toHaveBeenCalledWith('Email already exists'));
   });
