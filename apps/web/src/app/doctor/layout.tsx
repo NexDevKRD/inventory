@@ -12,8 +12,10 @@ const items = [
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AppShell items={items} title="Doctor Portal">
-      {children}
-    </AppShell>
+    <CartProvider>
+      <AppShell items={items} title="Doctor Portal">
+        {children}
+      </AppShell>
+    </CartProvider>
   );
 }

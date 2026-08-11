@@ -4,7 +4,8 @@ import { useTheme } from './ThemeProvider';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { MobileNav } from './MobileNav';
 import type { NavItem } from './Sidebar';
-import { SunIcon, MoonIcon, BellIcon, LogOutIcon } from '@/components/ui/icons';
+import { SunIcon, MoonIcon, LogOutIcon } from '@/components/ui/icons';
+import { NotificationBell } from './NotificationBell';
 
 const iconBtn =
   'flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors duration-150 hover:bg-raised hover:text-ink';
@@ -38,9 +39,7 @@ export function TopNav({ items, title }: { items?: NavItem[]; title?: string }) 
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>
-        <button type="button" aria-label="Notifications" className={iconBtn}>
-          <BellIcon />
-        </button>
+        <NotificationBell />
         <button
           type="button"
           onClick={() => logout()}
