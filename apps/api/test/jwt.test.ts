@@ -2,7 +2,7 @@ import { signAccessToken, verifyAccessToken, signRefreshToken, verifyRefreshToke
 
 describe('jwt lib', () => {
   it('round-trips an access token payload', () => {
-    const token = signAccessToken({ userId: 'u1', roles: ['DOCTOR'], permissions: ['x'] });
+    const token = signAccessToken({ userId: 'u1', email: 'u1@example.com', roles: ['DOCTOR'], permissions: ['x'] });
     const decoded = verifyAccessToken(token);
     expect(decoded.userId).toBe('u1');
   });
@@ -12,7 +12,7 @@ describe('jwt lib', () => {
     expect(decoded.userId).toBe('u1');
   });
   it('throws on tampered token', () => {
-    const token = signAccessToken({ userId: 'u1', roles: [], permissions: [] });
+    const token = signAccessToken({ userId: 'u1', email: 'u1@example.com', roles: [], permissions: [] });
     expect(() => verifyAccessToken(token + 'x')).toThrow();
   });
 });

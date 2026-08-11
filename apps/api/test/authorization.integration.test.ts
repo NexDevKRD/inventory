@@ -4,7 +4,7 @@ import { signAccessToken } from '../src/lib/jwt';
 
 describe('cross-role authorization', () => {
   it('403s when a DOCTOR-role token hits an admin-only user-management route', async () => {
-    const token = signAccessToken({ userId: 'doctor-1', roles: ['DOCTOR'], permissions: [] });
+    const token = signAccessToken({ userId: 'doctor-1', email: 'doctor-1@example.com', roles: ['DOCTOR'], permissions: [] });
     const res = await request(app).get('/api/v1/users').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(403);
   });
