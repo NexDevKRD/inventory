@@ -143,8 +143,8 @@ async function main() {
     [4, warehouseMain.id, 48, 'B-2406', 25],
     [4, warehouseWard.id, 60, 'B-2407', 90],
     [5, warehouseMain.id, 12, 'B-2408', 15],
-    [6, warehouseMain.id, 26, null as any, null],
-    [7, warehouseMain.id, 9, null as any, null],
+    [6, warehouseMain.id, 26, 'B-2409', null],
+    [7, warehouseMain.id, 9, 'B-2410', null],
   ];
 
   for (const [productIdx, warehouseId, quantity, batchNumber, expiryInDays] of stockPlan) {
