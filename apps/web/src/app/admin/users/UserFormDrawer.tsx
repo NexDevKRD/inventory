@@ -94,7 +94,8 @@ export function UserFormDrawer({
           )}
         </div>
 
-        <div className="mt-6 flex justify-end gap-2 border-t border-line pt-4">
+        {/* Sticks to the bottom so the actions stay reachable on a long form. */}
+        <div className="sticky -bottom-6 -mx-6 mt-6 flex justify-end gap-2 border-t border-line bg-surface px-6 py-4">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
