@@ -1,3 +1,77 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --c-canvas: 248 250 252;
+    --c-surface: 255 255 255;
+    --c-raised: 241 245 249;
+    --c-line: 226 232 240;
+    --c-ink: 15 23 42;
+    --c-muted: 100 116 139;
+    --c-faint: 148 163 184;
+
+    --c-active: 37 99 235;
+    --c-success: 22 163 74;
+    --c-warning: 217 119 6;
+    --c-danger: 220 38 38;
+  }
+
+  .dark {
+    --c-canvas: 2 6 23;
+    --c-surface: 15 23 42;
+    --c-raised: 30 41 59;
+    --c-line: 51 65 85;
+    --c-ink: 241 245 249;
+    --c-muted: 148 163 184;
+    --c-faint: 100 116 139;
+
+    --c-active: 96 165 250;
+    --c-success: 74 222 128;
+    --c-warning: 251 191 36;
+    --c-danger: 248 113 113;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-ink antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* One focus treatment for every interactive element — Preflight strips the default. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-active ring-offset-2 ring-offset-canvas;
+  }
+
+  ::selection {
+    @apply bg-active/20;
+  }
+}
+
+@layer components {
+  /* Shared field chrome so inputs/selects/textareas never drift apart. */
+  .field {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink
+           placeholder:text-faint transition-colors duration-150
+           hover:border-faint
+           focus:border-active focus-visible:ring-2 focus-visible:ring-active/40 focus-visible:ring-offset-0
+           disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .field-invalid {
+    @apply border-danger focus:border-danger focus-visible:ring-danger/40;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
