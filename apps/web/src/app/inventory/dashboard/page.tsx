@@ -1,10 +1,6 @@
-import { ComingSoon } from '@/components/ui/ComingSoon';
+'use client';
+import { OverviewDashboard } from '@/features/dashboard/OverviewDashboard';
 
-export default function DashboardPage() {
-  return (
-    <ComingSoon
-      title="Inventory dashboard"
-      whatsNext={["Stock level alerts","Expiring batches","Pending doctor requests","Purchase order status"]}
-    />
-  );
+export default function Page() {
+  return <OverviewDashboard title="Inventory dashboard" basePath="/inventory" />;
 }

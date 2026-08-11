@@ -2,8 +2,8 @@ import { AppShell } from '@/components/layout/AppShell';
 
 const items = [
   { label: 'Dashboard', href: '/supplier/dashboard' },
-  { label: 'Purchase Orders', href: '/supplier/purchase-orders', comingSoon: true },
-  { label: 'Invoices', href: '/supplier/invoices', comingSoon: true },
+  { label: 'Purchase Orders', href: '/supplier/purchase-orders' },
+  { label: 'Invoices', href: '/supplier/invoices' },
 ];
 
 export default function SupplierLayout({ children }: { children: React.ReactNode }) {

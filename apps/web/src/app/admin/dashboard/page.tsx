@@ -1,10 +1,6 @@
-import { ComingSoon } from '@/components/ui/ComingSoon';
+'use client';
+import { OverviewDashboard } from '@/features/dashboard/OverviewDashboard';
 
-export default function DashboardPage() {
-  return (
-    <ComingSoon
-      title="Super Admin dashboard"
-      whatsNext={["Platform-wide KPIs","User activity summary","Audit log highlights","System health"]}
-    />
-  );
+export default function Page() {
+  return <OverviewDashboard title="Super Admin dashboard" basePath="/inventory" />;
 }
