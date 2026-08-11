@@ -94,6 +94,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, PermissionKey[]> = {
   DOCTOR: [
     PermissionKey.CATEGORY_VIEW,
     PermissionKey.PRODUCT_VIEW,
+    // Needed to choose which warehouse a request is raised against.
+    PermissionKey.WAREHOUSE_VIEW,
     PermissionKey.REQUEST_CREATE,
     PermissionKey.REQUEST_VIEW_OWN,
   ],
