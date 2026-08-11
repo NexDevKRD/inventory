@@ -17,7 +17,9 @@ export function Drawer({
   const panelRef = useDismissable<HTMLDivElement>(open, onClose);
 
   return (
-    <div className={`fixed inset-0 z-40 ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+    // overflow-hidden: the closed panel is translated off-screen and would
+    // otherwise widen the page and add a horizontal scrollbar.
+    <div className={`fixed inset-0 z-40 overflow-hidden ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       <div
         className={`absolute inset-0 bg-slate-900/40 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`}
         onMouseDown={onClose}

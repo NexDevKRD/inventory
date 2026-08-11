@@ -6,6 +6,9 @@ const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 
 export interface AccessTokenPayload {
   userId: string;
+  // Carried so the client can rebuild its session on reload without an extra
+  // round-trip — the access token is the only user context it keeps.
+  email: string;
   roles: string[];
   permissions: string[];
 }

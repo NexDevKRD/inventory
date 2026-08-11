@@ -43,7 +43,7 @@ export const authService = {
 
     const roles = user.roles.map((r: any) => r.role.name);
     const permissions = flattenPermissions(user);
-    const accessToken = signAccessToken({ userId: user.id, roles, permissions });
+    const accessToken = signAccessToken({ userId: user.id, email: user.email, roles, permissions });
     const refreshTokenRaw = signRefreshToken(user.id);
     await refreshTokenRepository.create({
       userId: user.id,
@@ -89,7 +89,7 @@ export const authService = {
     const fullUser = await userRepository.findByEmail(user.email);
     const roles = fullUser!.roles.map((r: any) => r.role.name);
     const permissions = flattenPermissions(fullUser);
-    const accessToken = signAccessToken({ userId: user.id, roles, permissions });
+    const accessToken = signAccessToken({ userId: user.id, email: user.email, roles, permissions });
 
     return { accessToken, refreshToken: newRefreshRaw };
   },
